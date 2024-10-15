@@ -1,0 +1,29 @@
+﻿id,date,type,sender,description,amount
+10000001,2024-10-01,direct debit received,Acme Inc.,Gaven Ariana 4 8,386.13
+10000002,2024-10-02,Expense payment,,,-434.58
+10000003,2024-10-03,rejected direct debit,Witch Foods,Globex Corporation,-223.16
+10000004,2024-10-04,transfer received,,33129,856.76
+10000005,2024-10-05,direct debit received,Acme Inc.,Bob,581.58
+10000006,2024-10-06,Bank fee,,,-272.75
+10000007,2024-10-07,transfer received,Globex Corporation,Jessie and Raymond,732.43
+10000008,2024-10-08,transfer received,Initech,Savanna Lugo,376.48
+10000009,2024-10-09,direct debit received,,Anne Iris,540.92
+10000010,2024-10-10,rejected direct debit,,Evans Fiona,372.78
+10000011,2024-10-11,direct debit received,,Banks 7,-443.4
+10000012,2024-10-12,transfer received,,Anahi 6,489.67
+10000013,2024-10-13,Bank fee,,,749.42
+10000014,2024-10-14,direct debit received,,Alivia Fatima,-338.45
+10000015,2024-10-15,transfer received,,dcooper,-170.12
+10000016,2024-10-16,Expense payment,,,-402.33
+10000017,2024-10-17,Bank fee,,,516.45
+10000018,2024-10-18,transfer received,,kestes,1105.56
+10000019,2024-10-19,direct debit received,,Wheeler,-260.48
+10000020,2024-10-20,rejected direct debit,,Casey Miguel,-94.22
+10000021,2024-10-21,direct debit received,,Griggin Kyla,1508.32
+10000022,2024-10-22,transfer received,,Sullivan Gaines,728.23
+10000023,2024-10-23,Bank fee,,,1890.63
+10000024,2024-10-24,direct debit received,,Hahn 12,3.51
+10000025,2024-10-25,transfer received,,Douglas 5,-136.26
+10000026,2024-10-26,Expense payment,,,250.75
+10000027,2024-10-27,direct debit received,Acme Inc.,Lwilkerson,701.16
+10000028,2024-10-28,Bank fee,,,-196.26

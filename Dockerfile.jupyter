@@ -1,0 +1,11 @@
+# Use the specific base image for Jupyter (pinned for consistency)
+FROM quay.io/jupyter/base-notebook@sha256:275a43f7abdb0442bcb0e9c79fa237f8076b9960aa0fff10d08b95ed8674d853
+
+# Copy the requirements file into the image (elasticsearch libraries etc)
+COPY requirements-jupyter.txt /tmp/requirements-jupyter.txt
+
+# Copy elasticsearch/kibana credentials
+#COPY .env /tmp/.env
+
+# Install libraries
+RUN pip install --requirement /tmp/requirements-jupyter.txt

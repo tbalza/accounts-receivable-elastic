@@ -1,0 +1,11 @@
+﻿id,date,type,sender,description,amount,bank_synced,bank_sync_date,erp_synced,erp_sync_date
+10000001,2024-10-01,direct debit received,Acme Inc.,Gaven Ariana 4 8,386.13,,2024-10-13 12:27:53,,
+10000002,2024-10-02,Expense payment,,,-434.58,,2024-10-13 12:27:53,,
+10000003,2024-10-03,rejected direct debit,Witch Foods,Globex Corporation,-223.16,,2024-10-13 12:27:53,,
+10000004,2024-10-04,transfer received,,33129,856.76,,2024-10-13 12:27:53,,
+10000005,2024-10-05,direct debit received,Acme Inc.,Bob,581.58,,2024-10-13 12:27:53,,
+10000006,2024-10-06,Bank fee,,,-272.75,,2024-10-13 12:27:53,,
+10000007,2024-10-07,transfer received,Globex Corporation,Jessie and Raymond,732.43,,2024-10-13 12:27:53,,
+10000008,2024-10-08,transfer received,Initech,Savanna Lugo,376.48,,2024-10-13 12:27:53,,
+10000009,2024-10-09,direct debit received,,Anne Iris,540.92,,2024-10-13 12:27:53,,
+10000010,2024-10-10,rejected direct debit,,Evans Fiona,372.78,,2024-10-13 12:27:53,,

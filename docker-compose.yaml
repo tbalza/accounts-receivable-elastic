@@ -1,0 +1,194 @@
+version: "3.9"
+
+services:
+  elastic-setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    networks:
+      - elastic
+    volumes:
+      - elastic-certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: elastic\n"\
+          "    dns:\n"\
+          "      - elastic\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://elastic:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elastic:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/elastic/elastic.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  elastic:
+    depends_on:
+      elastic-setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    networks:
+      - elastic
+    volumes:
+      - elastic-certs:/usr/share/elasticsearch/config/certs
+      - elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - node.name=elastic
+      - cluster.name=elastic-cluster
+      - cluster.initial_master_nodes=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elastic/elastic.key
+      - xpack.security.http.ssl.certificate=certs/elastic/elastic.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elastic/elastic.key
+      - xpack.security.transport.ssl.certificate=certs/elastic/elastic.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=basic
+    mem_limit: 1GB
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    depends_on:
+      elastic:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:8.11.3
+    networks:
+      - elastic
+    volumes:
+      - elastic-certs:/usr/share/kibana/config/certs
+      - kibana:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    environment:
+      - TELEMETRY_ENABLED=false
+      - TELEMETRY_OPTIN=false
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://elastic:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    mem_limit: 1GB
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    #image: quay.io/jupyter/base-notebook@sha256:275a43f7abdb0442bcb0e9c79fa237f8076b9960aa0fff10d08b95ed8674d853 # base-notebook:latest # version pinned for consistency
+    networks:
+      - elastic
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan # default user for image release
+      - ./notebooks/.jupyter_notebook_config.py:/home/jovyan/.jupyter/jupyter_notebook_config.py # remove nag screen
+      - ./databases:/home/jovyan/databases # has sqlite database with client, student, bank tables
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - NB_USER=jovyan # default user for image release
+      - NB_UID=1000
+      - NB_GID=1000
+      - GRANT_SUDO=yes
+      - CHOWN_HOME=yes
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8888 || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    networks:
+      - elastic
+    ports:
+      - "8501:8501"
+    environment:
+      - GRADIO_ANALYTICS_ENABLED=0
+      - HF_HUB_DISABLE_TELEMETRY=1
+      - NEXT_TELEMETRY_DISABLED=1
+      - SE_AVOID_STATS=true
+      - GOTELEMETRY=off
+      - gatherUsageStats=false
+    volumes:
+      - ./databases:/app/databases
+      - ./streamlit:/app
+      - ./streamlit/.streamlit:/app/.streamlit
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    networks:
+      - elastic
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./databases:/app/databases
+      - ./fastapi:/app
+
+networks:
+  elastic:
+
+volumes:
+  elastic:
+  elastic-certs:
+  kibana:

@@ -1,0 +1,16 @@
+# .env (not shown here, different from .venv) should be included in gitignore. sample credentials left for demo purposes
+# notebooks/.jupyter_notebook_config.py should be included in gitignore. sample credentials left for demo purposes
+.DS_Store
+.idea/
+venv
+notebooks/.cache
+notebooks/.npm
+notebooks/.local
+notebooks/.ipython
+notebooks/.ipynb_checkpoints
+notebooks/.jupyter/migrated
+notebooks/.jupyter/jupyter_notebook_config.py
+notebooks/.jupyter/lab/workspaces
+!notebooks/.jupyter_notebook_config.py
+!notebooks/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/notification.jupyterlab-settings
+~$*

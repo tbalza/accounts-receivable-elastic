@@ -1,0 +1,12 @@
+[server]
+fileWatcherType = "poll"
+runOnSave = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showSidebarNavigation = false
+
+[theme]
+primaryColor="#237bcd"

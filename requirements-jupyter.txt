@@ -1,0 +1,4 @@
+pandas==2.2.3
+elasticsearch==8.15.1
+elasticsearch-dsl==8.15.4
+#pysqlite3==0.5.3
