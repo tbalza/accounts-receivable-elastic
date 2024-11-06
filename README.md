@@ -6,7 +6,7 @@ A Dockerized Streamlit app, that automates accounts receivable tasks. It's made 
 ## Cloning the Repository
 ```bash
 git clone git@github.com:tbalza/accounts-receivable-elastic.git
-cd accounts-receivable-automation
+cd accounts-receivable-elastic
 ```
 ## Launching the App
 ```bash
